@@ -10,7 +10,7 @@ export interface ContractConfig {
 
 export function useContractRead(config: ContractConfig, functionName: string, args: readonly unknown[] = []) {
   return useReadContract({
-    address: config.address,
+    address: config.address as `0x${string}`,
     abi: config.abi,
     functionName,
     args,
@@ -23,7 +23,7 @@ export function useContractWrite(config: ContractConfig, functionName: string) {
   const write = (args: readonly unknown[] = [], value?: string) => {
     try {
       writeContract({
-        address: config.address,
+        address: config.address as `0x${string}`,
         abi: config.abi,
         functionName,
         args,
