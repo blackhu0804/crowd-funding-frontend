@@ -6,8 +6,6 @@ import { ChainInfo } from './ChainInfo';
 import { useContractRead, useContractWrite } from '@/hooks/useContract';
 import { ContractAddresses, ContractABIs } from '@/contracts';
 import { useState } from 'react';
-import { ethers } from 'ethers';
-import { sepolia, baseSepolia, mainnet, base } from 'wagmi/chains';
 
 interface Campaign {
   campaginAddress: string;
@@ -16,20 +14,18 @@ interface Campaign {
   creationTime: bigint;
 }
 
-const getFactoryAddress = (chainId: number) => {
-  // 你的测试合约部署在Sepolia测试网
+const getFactoryAddress = () => {
   return ContractAddresses.CROWDFUNDING_FACTORY;
 };
 
 export function CrowdfundingFactory() {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [goal, setGoal] = useState('');
   const [duration, setDuration] = useState('');
 
-  const contractAddress = getFactoryAddress(chainId);
+  const contractAddress = getFactoryAddress();
 
   // 读取合约状态
   const { data: owner } = useContractRead(
@@ -68,6 +64,8 @@ export function CrowdfundingFactory() {
     if (!name || !description || !goal || !duration) return;
     
     try {
+      // Use dynamic import to avoid SSR issues
+      const { ethers } = await import('ethers');
       const goalInWei = ethers.parseEther(goal);
       const durationInDays = BigInt(duration);
       
@@ -95,7 +93,7 @@ export function CrowdfundingFactory() {
     return new Date(Number(timestamp) * 1000).toLocaleString();
   };
 
-  const isOwner = address?.toLowerCase() === owner?.toLowerCase();
+  const isOwner = address && owner && address.toLowerCase() === owner.toLowerCase();
 
   if (!isConnected) {
     return (
@@ -115,16 +113,16 @@ export function CrowdfundingFactory() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 mb-8 shadow-2xl">
-        <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 mb-6 sm:mb-8 shadow-2xl">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 mb-6 sm:mb-8">
           <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">众筹工厂</h2>
-            <p className="text-gray-300 text-lg">创建和管理众筹活动</p>
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">众筹工厂</h2>
+            <p className="text-gray-300 text-base sm:text-lg">创建和管理众筹活动</p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <ChainInfo />
-            <div className={`px-4 py-2 rounded-full text-sm font-medium border ${
+            <div className={`px-4 py-2 rounded-xl text-sm font-medium border self-start sm:self-auto ${
               paused ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'
             }`}>
               {paused ? '已暂停' : '运行中'}
@@ -132,30 +130,30 @@ export function CrowdfundingFactory() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-6 rounded-xl hover:border-cyan-500/30 transition-all duration-300">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-cyan-500/30 transition-all duration-300">
             <p className="text-sm text-gray-400 mb-2">合约所有者</p>
-            <p className="text-sm font-mono text-white truncate">{owner || '加载中...'}</p>
+            <p className="text-xs sm:text-sm font-mono text-white truncate">{typeof owner === 'string' ? owner : '加载中...'}</p>
           </div>
           
-          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-6 rounded-xl hover:border-purple-500/30 transition-all duration-300">
+          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-purple-500/30 transition-all duration-300">
             <p className="text-sm text-gray-400 mb-2">合约地址</p>
-            <p className="text-sm font-mono text-white truncate">{contractAddress}</p>
+            <p className="text-xs sm:text-sm font-mono text-white truncate">{contractAddress}</p>
           </div>
           
-          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-6 rounded-xl hover:border-pink-500/30 transition-all duration-300">
+          <div className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-pink-500/30 transition-all duration-300 sm:col-span-2 lg:col-span-1">
             <p className="text-sm text-gray-400 mb-2">总活动数</p>
-            <p className="text-2xl font-bold text-white">{allCampaigns?.length || 0}</p>
+            <p className="text-xl sm:text-2xl font-bold text-white">{Array.isArray(allCampaigns) ? allCampaigns.length : 0}</p>
           </div>
         </div>
 
         {isOwner && (
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8 backdrop-blur-sm">
-            <h3 className="font-bold text-yellow-300 mb-4 text-lg">管理员操作</h3>
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 backdrop-blur-sm">
+            <h3 className="font-bold text-yellow-300 mb-3 sm:mb-4 text-base sm:text-lg">管理员操作</h3>
             <button
               onClick={handleTogglePause}
               disabled={isToggling || isTogglingConfirming}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-3 rounded-lg hover:from-yellow-400 hover:to-orange-400 disabled:from-gray-500 disabled:to-gray-600 font-medium transition-all duration-300 transform hover:scale-105 disabled:transform-none"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-yellow-400 hover:to-orange-400 disabled:from-gray-500 disabled:to-gray-600 font-medium transition-all duration-300 transform hover:scale-105 disabled:transform-none text-sm sm:text-base w-full sm:w-auto"
             >
               {isToggling ? '处理中...' : isTogglingConfirming ? '确认中...' : paused ? '恢复合约' : '暂停合约'}
             </button>
@@ -169,10 +167,10 @@ export function CrowdfundingFactory() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
         {/* 创建众筹活动 */}
-        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 shadow-2xl">
-          <h3 className="text-2xl font-bold text-white mb-6">创建新活动</h3>
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">创建新活动</h3>
           
           <div className="space-y-6">
             <div>
@@ -183,7 +181,7 @@ export function CrowdfundingFactory() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例如：新产品开发"
                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
-                disabled={paused}
+                disabled={!!paused}
               />
             </div>
             
@@ -195,7 +193,7 @@ export function CrowdfundingFactory() {
                 placeholder="详细描述你的众筹目标和用途"
                 rows={4}
                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 resize-none"
-                disabled={paused}
+                disabled={!!paused}
               />
             </div>
             
@@ -208,7 +206,7 @@ export function CrowdfundingFactory() {
                 placeholder="1.0"
                 step="0.01"
                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
-                disabled={paused}
+                disabled={!!paused}
               />
             </div>
             
@@ -221,13 +219,13 @@ export function CrowdfundingFactory() {
                 placeholder="30"
                 min="1"
                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
-                disabled={paused}
+                disabled={!!paused}
               />
             </div>
             
             <button
               onClick={handleCreateCampaign}
-              disabled={!name || !description || !goal || !duration || isCreating || isCreatingConfirming || paused}
+              disabled={!name || !description || !goal || !duration || isCreating || isCreatingConfirming || !!paused}
               className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-4 px-6 rounded-xl hover:from-cyan-400 hover:to-purple-400 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed font-medium text-lg transition-all duration-300 transform hover:scale-105 disabled:transform-none shadow-lg hover:shadow-cyan-500/25"
             >
               {isCreating ? '创建中...' : isCreatingConfirming ? '确认中...' : '创建活动'}
@@ -254,56 +252,56 @@ export function CrowdfundingFactory() {
         </div>
 
         {/* 用户活动列表 */}
-        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 shadow-2xl">
-          <h3 className="text-2xl font-bold text-white mb-6">我的活动</h3>
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">我的活动</h3>
           
-          {userCampaigns && userCampaigns.length > 0 ? (
-            <div className="space-y-4">
+          {Array.isArray(userCampaigns) && userCampaigns.length > 0 ? (
+            <div className="space-y-3 sm:space-y-4">
               {userCampaigns.map((campaign: Campaign, index: number) => (
-                <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-6 rounded-xl hover:border-cyan-500/40 transition-all duration-300 transform hover:scale-[1.02]">
-                  <h4 className="font-bold text-white text-lg mb-3">{campaign.name}</h4>
-                  <p className="text-sm text-gray-300 mb-2">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress}</span></p>
-                  <p className="text-sm text-gray-300">创建时间: <span className="text-purple-300">{formatTimestamp(campaign.creationTime)}</span></p>
+                <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-cyan-500/40 transition-all duration-300 transform hover:scale-[1.02]">
+                  <h4 className="font-bold text-white text-base sm:text-lg mb-2 sm:mb-3 break-words">{campaign.name}</h4>
+                  <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 break-all">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress}</span></p>
+                  <p className="text-xs sm:text-sm text-gray-300">创建时间: <span className="text-purple-300">{formatTimestamp(campaign.creationTime)}</span></p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-6 sm:py-8">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <p className="text-gray-400">你还没有创建任何活动</p>
+              <p className="text-gray-400 text-sm sm:text-base">你还没有创建任何活动</p>
             </div>
           )}
         </div>
       </div>
 
       {/* 所有活动列表 */}
-      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-8 mt-8 shadow-2xl">
-        <h3 className="text-2xl font-bold text-white mb-6">所有活动</h3>
+      <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 mt-6 sm:mt-8 shadow-2xl">
+        <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">所有活动</h3>
         
-        {allCampaigns && allCampaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Array.isArray(allCampaigns) && allCampaigns.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {allCampaigns.map((campaign: Campaign, index: number) => (
-              <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-6 rounded-xl hover:border-purple-500/40 transition-all duration-300 transform hover:scale-[1.02]">
-                <h4 className="font-bold text-white text-lg mb-3">{campaign.name}</h4>
-                <p className="text-sm text-gray-300 mb-2">创建者: <span className="font-mono text-green-300">{campaign.owner.slice(0, 6)}...{campaign.owner.slice(-4)}</span></p>
-                <p className="text-sm text-gray-300 mb-2">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress.slice(0, 6)}...{campaign.campaginAddress.slice(-4)}</span></p>
-                <p className="text-sm text-gray-300">创建时间: <span className="text-purple-300">{formatTimestamp(campaign.creationTime)}</span></p>
+              <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-purple-500/40 transition-all duration-300 transform hover:scale-[1.02]">
+                <h4 className="font-bold text-white text-base sm:text-lg mb-2 sm:mb-3 break-words">{campaign.name}</h4>
+                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">创建者: <span className="font-mono text-green-300">{campaign.owner.slice(0, 6)}...{campaign.owner.slice(-4)}</span></p>
+                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 break-all">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress.slice(0, 6)}...{campaign.campaginAddress.slice(-4)}</span></p>
+                <p className="text-xs sm:text-sm text-gray-300">创建时间: <span className="text-purple-300">{formatTimestamp(campaign.creationTime)}</span></p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-8 sm:py-12">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-gray-400 text-lg">还没有任何活动</p>
-            <p className="text-gray-500 text-sm mt-2">成为第一个创建众筹活动的人吧！</p>
+            <p className="text-gray-400 text-base sm:text-lg">还没有任何活动</p>
+            <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2">成为第一个创建众筹活动的人吧！</p>
           </div>
         )}
       </div>
