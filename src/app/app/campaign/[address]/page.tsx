@@ -6,7 +6,7 @@ import { use } from 'react';
 
 interface CampaignPageProps {
   params: Promise<{
-    address: string;
+    address: `0x${string}`;
   }>;
 }
 
