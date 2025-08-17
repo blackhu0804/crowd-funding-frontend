@@ -161,6 +161,9 @@ src/
 
 ## 📦 智能合约
 
+### 合约代码仓库
+🔗 **合约源码**: [https://github.com/blackhu0804/crowd-funding](https://github.com/blackhu0804/crowd-funding)
+
 ### 合约地址
 - **CrowdfundingFactory** (Sepolia): `0x7958c5845f4638307e2871c0be6B6bEb22d29cC3`
 
