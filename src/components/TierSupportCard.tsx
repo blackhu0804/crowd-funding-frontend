@@ -2,6 +2,7 @@
 
 import { useContractWrite } from '@/hooks/useContract';
 import { ContractABIs } from '@/contracts';
+import { useEffect } from 'react';
 
 interface Tier {
   name: string;
@@ -14,9 +15,10 @@ interface TierSupportCardProps {
   tiers?: Tier[];
   campaignState?: number;
   isExpired: boolean;
+  onDataChange?: () => Promise<void>;
 }
 
-export function TierSupportCard({ campaignAddress, tiers, campaignState, isExpired }: TierSupportCardProps) {
+export function TierSupportCard({ campaignAddress, tiers, campaignState, isExpired, onDataChange }: TierSupportCardProps) {
   
   // 捐赠功能
   const { write: fundTier, isPending: isFunding, isConfirming: isFundingConfirming, isConfirmed: isFunded, error: fundError } = useContractWrite(
@@ -28,11 +30,24 @@ export function TierSupportCard({ campaignAddress, tiers, campaignState, isExpir
     if (!tiers || tierIndex >= tiers.length) return;
     
     try {
-      fundTier([tierIndex], tiers[tierIndex].amount.toString());
+      const amountInEth = (Number(tiers[tierIndex].amount) / 1e18).toString();
+      fundTier([tierIndex], amountInEth);
     } catch (err) {
       console.error('Funding failed:', err);
     }
   };
+
+  // 添加支持成功后的刷新逻辑
+  useEffect(() => {
+    if (isFunded && onDataChange) {
+      // 延迟一点执行，等待区块链状态更新
+      const timer = setTimeout(() => {
+        onDataChange();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isFunded, onDataChange]);
 
   const formatEther = (wei: bigint) => {
     return (Number(wei) / 1e18).toFixed(4);

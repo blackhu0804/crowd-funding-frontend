@@ -11,7 +11,6 @@ interface CampaignInfoCardProps {
 }
 
 export function CampaignInfoCard({
-
   name,
   description,
   owner,

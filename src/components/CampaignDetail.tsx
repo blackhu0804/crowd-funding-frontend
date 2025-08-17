@@ -26,51 +26,51 @@ export function CampaignDetail({ campaignAddress, onBack }: CampaignDetailProps)
   const { address, isConnected } = useAccount();
 
   // 基本信息读取
-  const { data: name } = useContractRead(
+  const { data: name, refetch: refetchName } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'name'
-  ) as { data: string | undefined };
+  ) as { data: string | undefined; refetch: () => void };
 
-  const { data: description } = useContractRead(
+  const { data: description, refetch: refetchDescription } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'description'
-  ) as { data: string | undefined };
+  ) as { data: string | undefined; refetch: () => void };
 
-  const { data: goal } = useContractRead(
+  const { data: goal, refetch: refetchGoal } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'goal'
-  ) as { data: bigint | undefined };
+  ) as { data: bigint | undefined; refetch: () => void };
 
-  const { data: deadline } = useContractRead(
+  const { data: deadline, refetch: refetchDeadline } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'deadline'
-  ) as { data: bigint | undefined };
+  ) as { data: bigint | undefined; refetch: () => void };
 
-  const { data: owner } = useContractRead(
+  const { data: owner, refetch: refetchOwner } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'owner'
-  ) as { data: string | undefined };
+  ) as { data: string | undefined; refetch: () => void };
 
-  const { data: contractBalance } = useContractRead(
+  const { data: contractBalance, refetch: refetchContractBalance } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'getContractBalance'
-  ) as { data: bigint | undefined };
+  ) as { data: bigint | undefined; refetch: () => void };
 
-  const { data: campaignState } = useContractRead(
+  const { data: campaignState, refetch: refetchCampaignState } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'getCampaginStatus'
-  ) as { data: number | undefined };
+  ) as { data: number | undefined; refetch: () => void };
 
-  const { data: tiers } = useContractRead(
+  const { data: tiers, refetch: refetchTiers } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'getTiers'
-  ) as { data: Tier[] | undefined };
+  ) as { data: Tier[] | undefined; refetch: () => void };
 
-  const { data: userContribution } = useContractRead(
+  const { data: userContribution, refetch: refetchUserContribution } = useContractRead(
     { address: campaignAddress, abi: ContractABIs.CROWDFUNDING },
     'backers',
     [address]
-  ) as { data: { totalContribution: bigint } | undefined };
+  ) as { data: { totalContribution: bigint } | undefined; refetch: () => void };
 
   // 辅助函数
   const isExpired = () => {
@@ -79,6 +79,25 @@ export function CampaignDetail({ campaignAddress, onBack }: CampaignDetailProps)
   };
 
   const isOwner = address && owner && address.toLowerCase() === owner.toLowerCase();
+
+  // 刷新所有数据的函数
+  const refreshAllData = async () => {
+    try {
+      await Promise.all([
+        refetchName(),
+        refetchDescription(),
+        refetchGoal(),
+        refetchDeadline(),
+        refetchOwner(),
+        refetchContractBalance(),
+        refetchCampaignState(),
+        refetchTiers(),
+        refetchUserContribution()
+      ]);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
 
   if (!isConnected) {
     return (
@@ -138,6 +157,7 @@ export function CampaignDetail({ campaignAddress, onBack }: CampaignDetailProps)
               <OwnerManagementPanel 
                 campaignAddress={campaignAddress}
                 tiers={tiers}
+                onDataChange={refreshAllData}
               />
             )}
 
@@ -168,6 +188,7 @@ export function CampaignDetail({ campaignAddress, onBack }: CampaignDetailProps)
               tiers={tiers}
               campaignState={campaignState}
               isExpired={isExpired()}
+              onDataChange={refreshAllData}
             />
 
             {/* Campaign Stats Card */}

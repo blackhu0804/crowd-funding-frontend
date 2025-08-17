@@ -5,7 +5,7 @@ import { WalletConnect } from './WalletConnect';
 import { ChainInfo } from './ChainInfo';
 import { useContractRead, useContractWrite } from '@/hooks/useContract';
 import { ContractAddresses, ContractABIs } from '@/contracts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Campaign {
@@ -30,22 +30,22 @@ export function CrowdfundingFactory() {
   const contractAddress = getFactoryAddress();
 
   // 读取合约状态
-  const { data: owner } = useContractRead(
+  const { data: owner, refetch: refetchOwner } = useContractRead(
     { address: contractAddress, abi: ContractABIs.CROWDFUNDING_FACTORY },
     'owner'
   );
 
-  const { data: paused } = useContractRead(
+  const { data: paused, refetch: refetchPaused } = useContractRead(
     { address: contractAddress, abi: ContractABIs.CROWDFUNDING_FACTORY },
     'paused'
   );
 
-  const { data: allCampaigns } = useContractRead(
+  const { data: allCampaigns, refetch: refetchAllCampaigns } = useContractRead(
     { address: contractAddress, abi: ContractABIs.CROWDFUNDING_FACTORY },
     'getAllCampaigns'
   );
 
-  const { data: userCampaigns } = useContractRead(
+  const { data: userCampaigns, refetch: refetchUserCampaigns } = useContractRead(
     { address: contractAddress, abi: ContractABIs.CROWDFUNDING_FACTORY },
     'getUserCampagins',
     [address]
@@ -61,6 +61,42 @@ export function CrowdfundingFactory() {
     { address: contractAddress, abi: ContractABIs.CROWDFUNDING_FACTORY },
     'togglePause'
   );
+
+  // 刷新所有数据的函数
+  const refreshAllData = async () => {
+    try {
+      await Promise.all([
+        refetchOwner(),
+        refetchPaused(),
+        refetchAllCampaigns(),
+        refetchUserCampaigns()
+      ]);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
+
+  // 创建活动成功后的刷新逻辑
+  useEffect(() => {
+    if (isCreated) {
+      const timer = setTimeout(() => {
+        refreshAllData();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isCreated]);
+
+  // 暂停/恢复操作成功后的刷新逻辑
+  useEffect(() => {
+    if (isToggled) {
+      const timer = setTimeout(() => {
+        refreshAllData();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isToggled]);
 
   const handleCreateCampaign = async () => {
     if (!name || !description || !goal || !duration) return;

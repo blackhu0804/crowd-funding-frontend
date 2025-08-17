@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useContractWrite } from '@/hooks/useContract';
 import { ContractABIs } from '@/contracts';
+import { useEffect } from 'react';
 
 interface Tier {
   name: string;
@@ -13,9 +14,10 @@ interface Tier {
 interface OwnerManagementPanelProps {
   campaignAddress: `0x${string}`;
   tiers?: Tier[];
+  onDataChange?: () => Promise<void>;
 }
 
-export function OwnerManagementPanel({ campaignAddress, tiers }: OwnerManagementPanelProps) {
+export function OwnerManagementPanel({ campaignAddress, tiers, onDataChange }: OwnerManagementPanelProps) {
   const [showTierManagement, setShowTierManagement] = useState(false);
   const [newTierName, setNewTierName] = useState('');
   const [newTierAmount, setNewTierAmount] = useState('');
@@ -59,6 +61,27 @@ export function OwnerManagementPanel({ campaignAddress, tiers }: OwnerManagement
   const formatEther = (wei: bigint) => {
     return (Number(wei) / 1e18).toFixed(4);
   };
+
+  // 添加成功后的刷新逻辑
+  useEffect(() => {
+    if (isTierAdded && onDataChange) {
+      const timer = setTimeout(() => {
+        onDataChange();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isTierAdded, onDataChange]);
+
+  useEffect(() => {
+    if (isTierRemoved && onDataChange) {
+      const timer = setTimeout(() => {
+        onDataChange();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isTierRemoved, onDataChange]);
 
   return (
     <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl">
