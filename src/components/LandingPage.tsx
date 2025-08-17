@@ -38,7 +38,6 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
           <div className="hidden md:flex space-x-8">
             <a href="#features" className="text-gray-300 hover:text-white transition-colors">功能</a>
             <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">如何运作</a>
-            <a href="#about" className="text-gray-300 hover:text-white transition-colors">关于</a>
           </div>
         </nav>
       </header>
@@ -92,7 +91,7 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
               <div className="text-gray-300">中介费用</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-pink-400 mb-2">24/7</div>
+              <div className="text-3xl md:text-4xl font-bold text-pink-400 mb-2">7*24</div>
               <div className="text-gray-300">全天候运行</div>
             </div>
           </div>
@@ -152,29 +151,83 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="relative z-10 px-6 py-20">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-16">
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              如何运作
-            </span>
-          </h2>
+      <section id="how-it-works" className="relative z-10 px-6 py-20 bg-gradient-to-b from-transparent via-black/10 to-black/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                如何运作
+              </span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              四个简单步骤，开启您的去中心化众筹之旅
+            </p>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6">
             {[
-              { step: "1", title: "连接钱包", desc: "使用 MetaMask 等钱包连接平台" },
-              { step: "2", title: "创建项目", desc: "填写项目信息、目标金额和期限" },
-              { step: "3", title: "获得支持", desc: "支持者通过智能合约直接投资" },
-              { step: "4", title: "达成目标", desc: "项目达标后自动释放资金" }
+              { 
+                step: "1", 
+                title: "连接钱包", 
+                desc: "使用 MetaMask 等钱包连接平台，确保资金安全",
+                icon: "🔗",
+                color: "from-cyan-500 to-blue-500"
+              },
+              { 
+                step: "2", 
+                title: "创建项目", 
+                desc: "填写项目信息、目标金额和期限，发布您的创意",
+                icon: "📝",
+                color: "from-purple-500 to-pink-500"
+              },
+              { 
+                step: "3", 
+                title: "获得支持", 
+                desc: "支持者通过智能合约直接投资，过程透明可信",
+                icon: "💎",
+                color: "from-pink-500 to-red-500"
+              },
+              { 
+                step: "4", 
+                title: "达成目标", 
+                desc: "项目达标后自动释放资金，实现共赢",
+                icon: "🎯",
+                color: "from-green-500 to-emerald-500"
+              }
             ].map((item, index) => (
-              <div key={index} className="relative">
-                <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl">
-                  {item.step}
+              <div key={index} className="relative group">
+                <div className="relative p-8 rounded-2xl bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-lg border border-gray-700/50 hover:border-gray-600/80 transition-all duration-500 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10">
+                  {/* Step number badge */}
+                  <div className={`absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+                    {item.step}
+                  </div>
+                  
+                  {/* Icon */}
+                  <div className="text-4xl mb-6 text-center group-hover:scale-110 transition-transform duration-300">
+                    {item.icon}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors duration-300">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-300 leading-relaxed text-sm">
+                      {item.desc}
+                    </p>
+                  </div>
+                  
+                  {/* Animated border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-sm"></div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                <p className="text-gray-300">{item.desc}</p>
+                
+                {/* Connection line for desktop */}
                 {index < 3 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 transform -translate-y-1/2"></div>
+                  <div className="hidden lg:block absolute top-1/2 left-full w-6 z-10">
+                    <div className="flex items-center justify-center h-0.5 bg-gradient-to-r from-gray-600 via-purple-400 to-gray-600">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full shadow-lg"></div>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
@@ -197,11 +250,6 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
             </span>
           </div>
           <p className="text-gray-400 mb-6">构建未来的去中心化众筹生态</p>
-          <div className="flex justify-center space-x-6 text-gray-400">
-            <a href="#" className="hover:text-cyan-400 transition-colors">隐私政策</a>
-            <a href="#" className="hover:text-cyan-400 transition-colors">服务条款</a>
-            <a href="#" className="hover:text-cyan-400 transition-colors">联系我们</a>
-          </div>
         </div>
       </footer>
     </div>
