@@ -1,13 +1,14 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { ethers } from 'ethers';
+import type { Abi } from 'viem';
 
 export interface ContractConfig {
   address: `0x${string}`;
-  abi: any[];
+  abi: Abi;
   chainId?: number;
 }
 
-export function useContractRead(config: ContractConfig, functionName: string, args: any[] = []) {
+export function useContractRead(config: ContractConfig, functionName: string, args: readonly unknown[] = []) {
   return useReadContract({
     address: config.address,
     abi: config.abi,
@@ -19,7 +20,7 @@ export function useContractRead(config: ContractConfig, functionName: string, ar
 export function useContractWrite(config: ContractConfig, functionName: string) {
   const { writeContract, data: hash, error, isPending } = useWriteContract();
 
-  const write = async (args: any[] = [], value?: string) => {
+  const write = (args: readonly unknown[] = [], value?: string) => {
     try {
       writeContract({
         address: config.address,
@@ -27,7 +28,7 @@ export function useContractWrite(config: ContractConfig, functionName: string) {
         functionName,
         args,
         value: value ? ethers.parseEther(value) : undefined,
-      });
+      } as Parameters<typeof writeContract>[0]);
     } catch (err) {
       console.error('Write contract error:', err);
       throw err;

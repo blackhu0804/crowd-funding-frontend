@@ -5,7 +5,7 @@ import { WalletConnect } from './WalletConnect';
 import { ChainInfo } from './ChainInfo';
 import { useContractRead, useContractWrite } from '@/hooks/useContract';
 import { ContractABIs } from '@/contracts';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface CampaignDetailProps {
   campaignAddress: string;
@@ -53,22 +53,11 @@ export function CampaignDetail({ campaignAddress, onBack }: CampaignDetailProps)
     if (!donationAmount || !isConnected) return;
     
     try {
-      // Use dynamic import to avoid SSR issues
-      const { ethers } = await import('ethers');
       await donate([], donationAmount);
       setDonationAmount('');
     } catch (err) {
       console.error('Donation failed:', err);
     }
-  };
-
-  const formatEther = (amount: bigint) => {
-    if (!amount) return '0';
-    // Use dynamic import for ethers
-    return new Promise(async (resolve) => {
-      const { ethers } = await import('ethers');
-      resolve(ethers.formatEther(amount));
-    });
   };
 
   const formatTimestamp = (timestamp: bigint) => {

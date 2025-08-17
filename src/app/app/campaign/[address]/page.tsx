@@ -2,15 +2,17 @@
 
 import { CampaignDetail } from '@/components/CampaignDetail';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 
 interface CampaignPageProps {
-  params: {
+  params: Promise<{
     address: string;
-  };
+  }>;
 }
 
 export default function CampaignPage({ params }: CampaignPageProps) {
   const router = useRouter();
+  const resolvedParams = use(params);
 
   const handleBack = () => {
     router.push('/app');
@@ -18,7 +20,7 @@ export default function CampaignPage({ params }: CampaignPageProps) {
 
   return (
     <CampaignDetail 
-      campaignAddress={params.address} 
+      campaignAddress={resolvedParams.address} 
       onBack={handleBack}
     />
   );
