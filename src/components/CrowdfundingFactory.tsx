@@ -1,11 +1,12 @@
 'use client';
 
-import { useAccount, useChainId } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { WalletConnect } from './WalletConnect';
 import { ChainInfo } from './ChainInfo';
 import { useContractRead, useContractWrite } from '@/hooks/useContract';
 import { ContractAddresses, ContractABIs } from '@/contracts';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Campaign {
   campaginAddress: string;
@@ -20,6 +21,7 @@ const getFactoryAddress = () => {
 
 export function CrowdfundingFactory() {
   const { address, isConnected } = useAccount();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [goal, setGoal] = useState('');
@@ -93,7 +95,11 @@ export function CrowdfundingFactory() {
     return new Date(Number(timestamp) * 1000).toLocaleString();
   };
 
-  const isOwner = address && owner && address.toLowerCase() === owner.toLowerCase();
+  const handleCampaignClick = (campaignAddress: string) => {
+    router.push(`/app/campaign/${campaignAddress}`);
+  };
+
+  const isOwner = address && typeof owner === 'string' && address.toLowerCase() === owner.toLowerCase();
 
   if (!isConnected) {
     return (
@@ -258,11 +264,18 @@ export function CrowdfundingFactory() {
           {Array.isArray(userCampaigns) && userCampaigns.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
               {userCampaigns.map((campaign: Campaign, index: number) => (
-                <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-cyan-500/40 transition-all duration-300 transform hover:scale-[1.02]">
+                <button
+                  key={index}
+                  onClick={() => handleCampaignClick(campaign.campaginAddress)}
+                  className="w-full text-left bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-cyan-500/40 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
+                >
                   <h4 className="font-bold text-white text-base sm:text-lg mb-2 sm:mb-3 break-words">{campaign.name}</h4>
                   <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 break-all">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress}</span></p>
                   <p className="text-xs sm:text-sm text-gray-300">创建时间: <span className="text-purple-300">{formatTimestamp(campaign.creationTime)}</span></p>
-                </div>
+                  <div className="flex items-center justify-end mt-3">
+                    <span className="text-cyan-400 text-sm">查看详情 →</span>
+                  </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -285,7 +298,11 @@ export function CrowdfundingFactory() {
         {Array.isArray(allCampaigns) && allCampaigns.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {allCampaigns.map((campaign: Campaign, index: number) => (
-              <div key={index} className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-purple-500/40 transition-all duration-300 transform hover:scale-[1.02]">
+              <div 
+                key={index} 
+                className="bg-gradient-to-br from-gray-700/50 to-gray-800/50 border border-gray-600/30 p-4 sm:p-6 rounded-xl hover:border-purple-500/40 transition-all duration-300 transform hover:scale-[1.02]"
+                onClick={() => handleCampaignClick(campaign.campaginAddress)}
+              >
                 <h4 className="font-bold text-white text-base sm:text-lg mb-2 sm:mb-3 break-words">{campaign.name}</h4>
                 <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">创建者: <span className="font-mono text-green-300">{campaign.owner.slice(0, 6)}...{campaign.owner.slice(-4)}</span></p>
                 <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 break-all">地址: <span className="font-mono text-cyan-300">{campaign.campaginAddress.slice(0, 6)}...{campaign.campaginAddress.slice(-4)}</span></p>
